@@ -1,37 +1,42 @@
-import moderngl
+import moderngl_window as mglw, moderngl
 import numpy as np
-
-from PIL import Image
-
-ctx = moderngl.create_standalone_context()
 
 shaders_source = {}
 
 with open("vert_test.glsl", "r") as f:
     shaders_source['vertex_shader'] = f.read()
 
-with open("geom_test.glsl", "r") as f:
-    shaders_source['geometry_shader'] = f.read()
+# with open("geom_test.glsl", "r") as f:
+#     shaders_source['geometry_shader'] = f.read()
 
 with open("frag_test.glsl", "r") as f:
     shaders_source['fragment_shader'] = f.read()
 
-prog = ctx.program(**shaders_source)
 
-points = np.array([
-    [0.0, 0.0, 0.0, 1, 0, 0, 1],
-])
+class Test(mglw.WindowConfig):
+    gl_version = (3, 3)
+    window_size = (1920, 1080)
 
-ctx.enable(moderngl.PROGRAM_POINT_SIZE)
-vbo = ctx.buffer(points.astype('f4').tobytes())
-vao = ctx.simple_vertex_array(prog, vbo, 'point', 'color')
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
 
-fbo = ctx.simple_framebuffer((512, 512))
+        vertices = np.array([
+            0.0, 0.8,
+            -0.6, -0.8,
+            0.6, -0.8,
+        ], dtype='f4')
 
-fbo.use()
+        self.ctx.enable(moderngl.PROGRAM_POINT_SIZE)
+        self.ctx.wireframe = False
+        
+        self.prog = self.ctx.program(**shaders_source)
+        self.vbo = self.ctx.buffer(vertices.astype('f4').tobytes())
+        self.vao = self.ctx.simple_vertex_array(self.prog, self.vbo, 'in_vert')
 
-fbo.clear(0.0, 0.0, 0.0, 1.0)
 
-vao.render(moderngl.POINTS)
+    def render(self, time, frametime):
+        self.ctx.clear(1.0, 1.0, 1.0)
+        self.vao.render(moderngl.TRIANGLES)
 
-Image.frombytes('RGB', fbo.size, fbo.read(), 'raw', 'RGB', 0, -1).show()
+if __name__ == "__main__":
+    mglw.run_window_config(Test)

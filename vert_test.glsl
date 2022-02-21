@@ -1,12 +1,8 @@
 #version 330
 
-in vec3 point;
-in vec4 color;
-
-out vec3 v_point;
-out vec4 v_color;
+in vec2 in_vert;
 
 void main(){
-    v_point = point;
-    v_color = color;
+    gl_Position = vec4(in_vert, 0.0, 1.0);
+    gl_PointSize = 5.;
 }

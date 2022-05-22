@@ -3,13 +3,13 @@ import numpy as np
 
 shaders_source = {}
 
-with open("vert_test.glsl", "r") as f:
+with open("bezier_vert.glsl", "r") as f:
     shaders_source['vertex_shader'] = f.read()
 
-# with open("geom_test.glsl", "r") as f:
-#     shaders_source['geometry_shader'] = f.read()
+with open("bezier_geom.glsl", "r") as f:
+    shaders_source['geometry_shader'] = f.read()
 
-with open("frag_test.glsl", "r") as f:
+with open("bezier_frag.glsl", "r") as f:
     shaders_source['fragment_shader'] = f.read()
 
 
@@ -21,17 +21,19 @@ class Test(mglw.WindowConfig):
         super().__init__(**kwargs)
 
         vertices = np.array([
-            0.0, 0.8,
-            -0.6, -0.8,
-            0.6, -0.8,
+            -0.5, 0., 0.,
+            0., 0.5, 0.,
+            0.5, 0., 0.
         ], dtype='f4')
 
         self.ctx.enable(moderngl.PROGRAM_POINT_SIZE)
         self.ctx.wireframe = False
         
         self.prog = self.ctx.program(**shaders_source)
+        self.prog['steps'] = 40
+
         self.vbo = self.ctx.buffer(vertices.astype('f4').tobytes())
-        self.vao = self.ctx.simple_vertex_array(self.prog, self.vbo, 'in_vert')
+        self.vao = self.ctx.simple_vertex_array(self.prog, self.vbo, 'point')
 
 
     def render(self, time, frametime):

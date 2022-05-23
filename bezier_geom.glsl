@@ -1,9 +1,10 @@
 #version 330
 
 layout (triangles) in;
-layout (line_strip, max_vertices=200) out;
+layout (triangle_strip, max_vertices=200) out;
 
 uniform int steps;
+uniform float width;
 
 in vec4 v_point[3];
 
@@ -14,8 +15,30 @@ vec3 quadratic_bezier(vec3 p1, vec3 c1, vec3 p2, float t) {
     return term1 + term2 + term3;
 }
 
+vec3 perp_clockwise(vec3 v1) {
+    return vec3(v1[1], -v1[0], v1.z);
+}
+
+vec3 perp_anticlockwise(vec3 v1) {
+    return vec3(-v1.y, v1.x, v1.z);
+}
+
+void asRect(vec3 p1, vec3 p2, out vec3 rect_p1, out vec3 rect_p2, out vec3 rect_p3, out vec3 rect_p4) {
+    vec3 v1 = p2 - p1;
+    vec3 v2 = p1 - p2;
+
+    vec3 perp_to_v1 = perp_clockwise(normalize(v1));
+    vec3 perp_to_v2 = perp_clockwise(normalize(v2));
+
+    rect_p1 = p1 + (perp_to_v1 * (width / 2));
+    rect_p2 = p1 + (-perp_to_v1 * (width / 2));
+    rect_p3 = p2 + (perp_to_v2 * (width / 2));
+    rect_p4 = p2 + (-perp_to_v2 * (width / 2));
+}
+
 
 void main() {
+    gl_PointSize = 5.; // todo remove eventually
 
     // start and end points
     vec4 p1 = v_point[0];
@@ -28,10 +51,33 @@ void main() {
     for (int i = 0; i <= steps; i += 2) {
         vec3 current_point = quadratic_bezier(p1.xyz, c1.xyz, p2.xyz, i /  float(steps));
 
-        gl_Position = vec4(last_point, 1.);
+        vec3 start = vec3(last_point);
+        vec3 end = vec3(current_point);
+
+        vec3 rect_p1;
+        vec3 rect_p2;
+        vec3 rect_p3;
+        vec3 rect_p4;
+
+        asRect(start, end, rect_p1, rect_p2, rect_p3, rect_p4);
+
+        gl_Position = vec4(rect_p1, 1.);
         EmitVertex();
 
-        gl_Position = vec4(current_point, 1.);
+        gl_Position = vec4(rect_p2, 1.);
+        EmitVertex();
+
+        gl_Position = vec4(rect_p4, 1.);
+        EmitVertex();
+        EndPrimitive();
+
+        gl_Position = vec4(rect_p4, 1.);
+        EmitVertex();
+
+        gl_Position = vec4(rect_p3, 1.);
+        EmitVertex();
+
+        gl_Position = vec4(rect_p2, 1.);
         EmitVertex();
         EndPrimitive();
 

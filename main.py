@@ -22,7 +22,7 @@ class Test(mglw.WindowConfig):
 
         vertices = np.array([
             -0.5, 0., 0.,
-            0., 1., 0.,
+            0., -1., 0.,
             0.5, 0., 0.
         ], dtype='f4')
 
@@ -31,7 +31,7 @@ class Test(mglw.WindowConfig):
         
         self.prog = self.ctx.program(**shaders_source)
         self.prog['steps'] = 40
-        self.prog['width'] = 0.02
+        self.prog['width'] = 0.005
 
         self.vbo = self.ctx.buffer(vertices.astype('f4').tobytes())
         self.vao = self.ctx.simple_vertex_array(self.prog, self.vbo, 'point')

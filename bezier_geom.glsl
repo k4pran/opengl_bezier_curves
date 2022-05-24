@@ -48,7 +48,10 @@ void main() {
     vec4 c1 = v_point[1];
 
     vec3 last_point = p1.xyz;
-    for (int i = 0; i <= steps; i += 2) {
+    vec3 last_connection_point_1;
+    vec3 last_connection_point_2;
+
+    for (int i = 1; i <= steps; i += 2) {
         vec3 current_point = quadratic_bezier(p1.xyz, c1.xyz, p2.xyz, i /  float(steps));
 
         vec3 start = vec3(last_point);
@@ -82,5 +85,18 @@ void main() {
         EndPrimitive();
 
         last_point = current_point;
+
+        if (i > 1) {
+            gl_Position = vec4(last_connection_point_1, 1.);
+            EmitVertex();
+
+            gl_Position = vec4(last_connection_point_2, 1.);
+            EmitVertex();
+
+            gl_Position = vec4(rect_p2, 1.);
+            EmitVertex();
+        }
+        last_connection_point_1 = rect_p3;
+        last_connection_point_2 = rect_p4;
     }
 }

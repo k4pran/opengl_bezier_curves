@@ -1,9 +1,12 @@
 #version 330
 
-layout (triangles) in;
-layout (triangle_strip, max_vertices=200) out;
+const int MIN_SEGMENTS = 3;
+const int MAX_SEGMENTS = 22;
 
-uniform int steps;
+layout (triangles) in;
+layout (triangle_strip, max_vertices=256) out;
+
+uniform int segments;
 uniform float width;
 
 in vec4 v_point[3];
@@ -23,22 +26,72 @@ vec3 perp_anticlockwise(vec3 v1) {
     return vec3(-v1.y, v1.x, v1.z);
 }
 
-void asRect(vec3 p1, vec3 p2, out vec3 rect_p1, out vec3 rect_p2, out vec3 rect_p3, out vec3 rect_p4) {
-    vec3 v1 = p2 - p1;
-    vec3 v2 = p1 - p2;
-
-    vec3 perp_to_v1 = perp_clockwise(normalize(v1));
-    vec3 perp_to_v2 = perp_clockwise(normalize(v2));
-
-    rect_p1 = p1 + (perp_to_v1 * (width / 2));
-    rect_p2 = p1 + (-perp_to_v1 * (width / 2));
-    rect_p3 = p2 + (perp_to_v2 * (width / 2));
-    rect_p4 = p2 + (-perp_to_v2 * (width / 2));
+vec3 find_mid_point(vec3 p1, vec3 p2) {
+    return (p1 + p2) / 2.;
 }
 
+void triangulate(vec3 start, vec3 anchor, vec3 end) {
+    vec3 v_anc1 = anchor - start;
+    vec3 v_anc2 = anchor - end;
+
+    vec3 v_start_to_border = perp_anticlockwise(normalize(v_anc1));
+    vec3 v_end_to_border = perp_clockwise(normalize(v_anc2));
+
+    vec3 start_border_point_1 = start + (v_start_to_border * (width / 2.));
+    vec3 start_border_point_2 = start - (v_start_to_border * (width / 2.));
+    vec3 anchor_border_point_1 = anchor + (v_start_to_border * (width / 2.));
+    vec3 anchor_border_point_2 = anchor + (v_end_to_border * (width / 2.));
+    vec3 end_border_point_1 = end + (v_end_to_border * (width / 2.));
+    vec3 end_border_point_2 = end - (v_end_to_border * (width / 2.));
+    vec3 v_corner = normalize(v_start_to_border + v_end_to_border);
+    vec3 corner_point = anchor - (v_corner * (width / 2.));
+
+    // Start segment
+    gl_Position = vec4(start_border_point_1, 1.);
+    EmitVertex();
+
+    gl_Position = vec4(start_border_point_2, 1.);
+    EmitVertex();
+
+    gl_Position = vec4(corner_point, 1.);
+    EmitVertex();
+    EndPrimitive();
+
+    gl_Position = vec4(corner_point, 1.);
+    EmitVertex();
+
+    gl_Position = vec4(start_border_point_1, 1.);
+    EmitVertex();
+
+    gl_Position = vec4(anchor_border_point_1, 1.);
+    EmitVertex();
+
+    // Anchor segment
+    gl_Position = vec4(corner_point, 1.);
+    EmitVertex();
+
+    gl_Position = vec4(anchor_border_point_2, 1.);
+    EmitVertex();
+
+    // End segment
+    gl_Position = vec4(end_border_point_1, 1.);
+    EmitVertex();
+
+    gl_Position = vec4(corner_point, 1.);
+    EmitVertex();
+
+    gl_Position = vec4(end_border_point_2, 1.);
+    EmitVertex();
+
+    gl_Position = vec4(end_border_point_1, 1.);
+    EmitVertex();
+
+    EndPrimitive();
+}
 
 void main() {
-    gl_PointSize = 5.; // todo remove eventually
+    int nb_segments = segments > MAX_SEGMENTS ? MAX_SEGMENTS : segments;
+    nb_segments = segments < MIN_SEGMENTS ? MIN_SEGMENTS : nb_segments;
 
     // start and end points
     vec4 p1 = v_point[0];
@@ -47,56 +100,20 @@ void main() {
     // control point
     vec4 c1 = v_point[1];
 
-    vec3 last_point = p1.xyz;
-    vec3 last_connection_point_1;
-    vec3 last_connection_point_2;
+    // get bezier points
+    vec3 bezier_points[MAX_SEGMENTS];
+    for (int i = 0; i <= segments; i++) {
+        vec3 bezier_point = quadratic_bezier(p1.xyz, c1.xyz, p2.xyz, i / float(segments));
+        bezier_points[i] = bezier_point;
+    }
 
-    for (int i = 1; i <= steps; i += 2) {
-        vec3 current_point = quadratic_bezier(p1.xyz, c1.xyz, p2.xyz, i /  float(steps));
+    // get mids
+    vec3 mid_points[MAX_SEGMENTS];
+    for (int i = 0; i < segments; i++) {
+        mid_points[i] = find_mid_point(bezier_points[i], bezier_points[i + 1]);
+    }
 
-        vec3 start = vec3(last_point);
-        vec3 end = vec3(current_point);
-
-        vec3 rect_p1;
-        vec3 rect_p2;
-        vec3 rect_p3;
-        vec3 rect_p4;
-
-        asRect(start, end, rect_p1, rect_p2, rect_p3, rect_p4);
-
-        gl_Position = vec4(rect_p1, 1.);
-        EmitVertex();
-
-        gl_Position = vec4(rect_p2, 1.);
-        EmitVertex();
-
-        gl_Position = vec4(rect_p4, 1.);
-        EmitVertex();
-        EndPrimitive();
-
-        gl_Position = vec4(rect_p4, 1.);
-        EmitVertex();
-
-        gl_Position = vec4(rect_p3, 1.);
-        EmitVertex();
-
-        gl_Position = vec4(rect_p2, 1.);
-        EmitVertex();
-        EndPrimitive();
-
-        last_point = current_point;
-
-        if (i > 1) {
-            gl_Position = vec4(last_connection_point_1, 1.);
-            EmitVertex();
-
-            gl_Position = vec4(last_connection_point_2, 1.);
-            EmitVertex();
-
-            gl_Position = vec4(rect_p2, 1.);
-            EmitVertex();
-        }
-        last_connection_point_1 = rect_p3;
-        last_connection_point_2 = rect_p4;
+    for (int i = 1; i < segments; i++) {
+        triangulate(mid_points[i - 1], bezier_points[i], mid_points[i]);
     }
 }

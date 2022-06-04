@@ -63,12 +63,14 @@ class Test(mglw.WindowConfig):
         self.prog['segments'] = 14
         self.prog['width'] = 0.025
 
-        model_mat = np.eye(4)
-        proj_mat = frustum(0., 800., 0., 600., -10., 10.)
+        model_mat: np.ndarray = np.eye(4)
+        view_mat: np.ndarray = np.eye(4)
+        proj_mat: np.ndarray = frustum(0., 800., 0., 600., -10., 10.)
 
-        self.translate_by(model_mat, x=100, y=50.)
+        # self.translate_by(model_mat, x=100, y=50.)
 
         self.prog['projection'] = tuple(proj_mat.T.ravel())
+        self.prog['view'] = tuple(view_mat.T.ravel())
         self.prog['model'] = tuple(model_mat.T.ravel())
         # self.prog['uBlendFactor'] = 6.1
 

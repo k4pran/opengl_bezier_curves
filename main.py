@@ -27,12 +27,12 @@ def frustum(left: float, right: float, bottom: float, top: float,
     c = (far + near) / depth
 
     return np.array(
-        [
+        (
             [x, 0, 0, -a],
             [0, y, 0, -b],
             [0, 0, -z, -c],
             [0, 0, 0, 1.],
-        ],
+        ),
     )
 
 
@@ -62,13 +62,24 @@ class Test(mglw.WindowConfig):
         self.prog = self.ctx.program(**shaders_source)
         self.prog['segments'] = 14
         self.prog['width'] = 0.025
+
+        model_mat = np.eye(4)
         proj_mat = frustum(0., 800., 0., 600., -10., 10.)
-        self.prog['proj_mat'] = tuple(proj_mat.T.ravel())
+
+        self.translate_by(model_mat, x=100, y=50.)
+
+        self.prog['projection'] = tuple(proj_mat.T.ravel())
+        self.prog['model'] = tuple(model_mat.T.ravel())
         # self.prog['uBlendFactor'] = 6.1
 
         self.vbo = self.ctx.buffer(vertices.astype('f4').tobytes())
         self.vao = self.ctx.simple_vertex_array(self.prog, self.vbo, 'point')
 
+
+    def translate_by(self, model: np.ndarray, x=0., y=0., z=0.):
+        model[0][3] += x
+        model[1][3] += y
+        model[2][3] += z
 
     def render(self, time, frametime):
         self.ctx.clear(1.0, 1.0, 1.0)

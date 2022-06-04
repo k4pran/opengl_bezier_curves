@@ -1,11 +1,12 @@
 #version 330
 
-uniform mat4 proj_mat;
+uniform mat4 projection;
+uniform mat4 model;
 
 in vec3 point;
 
 out vec4 v_point;
 
 void main(){
-    v_point = proj_mat * vec4(point, 1.0);
+    v_point = projection * model * vec4(point, 1.0);
 }

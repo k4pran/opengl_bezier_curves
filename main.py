@@ -60,7 +60,7 @@ class Test(mglw.WindowConfig):
         self.ctx.wireframe = False
         
         self.prog = self.ctx.program(**shaders_source)
-        self.prog['segments'] = 14
+        self.prog['segments'] = 30
         self.prog['width'] = 0.03
 
         model_mat: np.ndarray = np.eye(4)

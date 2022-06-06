@@ -65,12 +65,6 @@ void triangulate(vec3 start, vec3 anchor, vec3 end) {
     pos = corner_point.xy;
     center = ((corner_point + anchor_border_point_2) / 2.).xy;
     EmitVertex();
-    EndPrimitive();
-
-    gl_Position = vec4(corner_point, 1.);
-    pos = corner_point.xy;
-    center = ((corner_point + anchor_border_point_2) / 2.).xy;
-    EmitVertex();
 
     gl_Position = vec4(start_border_point_1, 1.);
     pos = start_border_point_1.xy;
@@ -99,15 +93,8 @@ void triangulate(vec3 start, vec3 anchor, vec3 end) {
     pos = anchor_border_point_2.xy;
     center = ((corner_point + anchor_border_point_2) / 2.).xy;
     EmitVertex();
-    EndPrimitive();
-
 
     // End segment
-    gl_Position = vec4(anchor_border_point_2, 1.);
-    pos = anchor_border_point_2.xy;
-    center = ((corner_point + anchor_border_point_2) / 2.).xy;
-    EmitVertex();
-
     gl_Position = vec4(end_border_point_1, 1.);
     pos = end_border_point_1.xy;
     center = ((end_border_point_1 + end_border_point_2) / 2.).xy;

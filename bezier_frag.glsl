@@ -17,8 +17,5 @@ void main() {
     }
 
     frag_color = vec4(0., 0., 0., 1.);
-    if (dist != 0) {
-        frag_color.a *= smoothstep(0., .75, 1. - (1. / (width / 2.) * dist));
-    }
-
+    frag_color.a *= smoothstep(0., .5, 1. - (1. / (width / 2.) * dist));
 }

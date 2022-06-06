@@ -11,6 +11,9 @@ uniform float width;
 
 in vec4 v_point[3];
 
+out vec2 center;
+out vec2 pos;
+
 vec3 quadratic_bezier(vec3 p1, vec3 c1, vec3 p2, float t) {
     vec3 term1 = pow(1. - t, 2) * p1;
     vec3 term2 = 2. * t * (1. - t) * c1;
@@ -31,11 +34,13 @@ vec3 find_mid_point(vec3 p1, vec3 p2) {
 }
 
 void triangulate(vec3 start, vec3 anchor, vec3 end) {
+
     vec3 v_anc1 = anchor - start;
     vec3 v_anc2 = anchor - end;
 
     vec3 v_start_to_border = perp_anticlockwise(normalize(v_anc1));
     vec3 v_end_to_border = perp_clockwise(normalize(v_anc2));
+    vec3 v_corner = normalize(v_start_to_border + v_end_to_border);
 
     vec3 start_border_point_1 = start + (v_start_to_border * (width / 2.));
     vec3 start_border_point_2 = start - (v_start_to_border * (width / 2.));
@@ -43,49 +48,91 @@ void triangulate(vec3 start, vec3 anchor, vec3 end) {
     vec3 anchor_border_point_2 = anchor + (v_end_to_border * (width / 2.));
     vec3 end_border_point_1 = end + (v_end_to_border * (width / 2.));
     vec3 end_border_point_2 = end - (v_end_to_border * (width / 2.));
-    vec3 v_corner = normalize(v_start_to_border + v_end_to_border);
     vec3 corner_point = anchor - (v_corner * (width / 2.));
 
     // Start segment
     gl_Position = vec4(start_border_point_1, 1.);
+    pos = start_border_point_1.xy;
+    center = ((start_border_point_1 + start_border_point_2) / 2.).xy;
     EmitVertex();
 
     gl_Position = vec4(start_border_point_2, 1.);
+    pos = start_border_point_2.xy;
+    center = ((start_border_point_1 + start_border_point_2) / 2.).xy;
     EmitVertex();
 
     gl_Position = vec4(corner_point, 1.);
+    pos = corner_point.xy;
+    center = ((corner_point + anchor_border_point_2) / 2.).xy;
     EmitVertex();
     EndPrimitive();
 
     gl_Position = vec4(corner_point, 1.);
+    pos = corner_point.xy;
+    center = ((corner_point + anchor_border_point_2) / 2.).xy;
     EmitVertex();
 
     gl_Position = vec4(start_border_point_1, 1.);
+    pos = start_border_point_1.xy;
+    center = ((start_border_point_1 + start_border_point_2) / 2.).xy;
     EmitVertex();
 
     gl_Position = vec4(anchor_border_point_1, 1.);
+    pos = anchor_border_point_1.xy;
+    center = ((anchor_border_point_1 + corner_point) / 2.).xy;
     EmitVertex();
+    EndPrimitive();
 
     // Anchor segment
+
+    gl_Position = vec4(anchor_border_point_1, 1.);
+    pos = anchor_border_point_1.xy;
+    center = ((anchor_border_point_1 + corner_point) / 2.).xy;
+    EmitVertex();
+
     gl_Position = vec4(corner_point, 1.);
+    pos = corner_point.xy;
+    center = ((corner_point + anchor_border_point_1) / 2.).xy;
     EmitVertex();
 
     gl_Position = vec4(anchor_border_point_2, 1.);
+    pos = anchor_border_point_2.xy;
+    center = ((corner_point + anchor_border_point_2) / 2.).xy;
     EmitVertex();
+    EndPrimitive();
+
 
     // End segment
+    gl_Position = vec4(anchor_border_point_2, 1.);
+    pos = anchor_border_point_2.xy;
+    center = ((corner_point + anchor_border_point_2) / 2.).xy;
+    EmitVertex();
+
     gl_Position = vec4(end_border_point_1, 1.);
+    pos = end_border_point_1.xy;
+    center = ((end_border_point_1 + end_border_point_2) / 2.).xy;
     EmitVertex();
 
     gl_Position = vec4(corner_point, 1.);
+    pos = corner_point.xy;
+    center = ((corner_point + anchor_border_point_2) / 2.).xy;
+    EmitVertex();
+    EndPrimitive();
+
+    gl_Position = vec4(corner_point, 1.);
+    pos = corner_point.xy;
+    center = ((corner_point + anchor_border_point_2) / 2.).xy;
     EmitVertex();
 
     gl_Position = vec4(end_border_point_2, 1.);
+    pos = end_border_point_2.xy;
+    center = ((end_border_point_2 + end_border_point_1) / 2.).xy;
     EmitVertex();
 
     gl_Position = vec4(end_border_point_1, 1.);
+    pos = end_border_point_1.xy;
+    center = ((end_border_point_2 + end_border_point_1) / 2.).xy;
     EmitVertex();
-
     EndPrimitive();
 }
 

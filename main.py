@@ -61,7 +61,7 @@ class Test(mglw.WindowConfig):
         
         self.prog = self.ctx.program(**shaders_source)
         self.prog['segments'] = 14
-        self.prog['width'] = 0.025
+        self.prog['width'] = 0.03
 
         model_mat: np.ndarray = np.eye(4)
         view_mat: np.ndarray = np.eye(4)

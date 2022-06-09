@@ -45,7 +45,7 @@ class Test(mglw.WindowConfig):
 
         vertices = np.array([
             200., 300., 0.,
-            400., 600., 0.,
+            400., 300., 0.,
             600., 300., 0.
         ], dtype='f4')
 
@@ -60,8 +60,8 @@ class Test(mglw.WindowConfig):
         self.ctx.wireframe = False
         
         self.prog = self.ctx.program(**shaders_source)
-        self.prog['segments'] = 30
-        self.prog['width'] = 0.03
+        self.prog['segments'] = 15
+        self.prog['width'] = 0.05
 
         model_mat: np.ndarray = np.eye(4)
         view_mat: np.ndarray = np.eye(4)

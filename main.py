@@ -12,6 +12,8 @@ with open("bezier_geom.glsl", "r") as f:
 with open("bezier_frag.glsl", "r") as f:
     shaders_source['fragment_shader'] = f.read()
 
+K = 0.5522847498
+
 def frustum(left: float, right: float, bottom: float, top: float,
                      near: float, far: float):
     width = right - left
@@ -45,7 +47,8 @@ class Test(mglw.WindowConfig):
 
         vertices = np.array([
             200., 300., 0.,
-            400., 300., 0.,
+            350., 500., 0.,
+            450., 500., 0.,
             600., 300., 0.
         ], dtype='f4')
 
@@ -58,10 +61,14 @@ class Test(mglw.WindowConfig):
         #     moderngl.ONE,
         # )
         self.ctx.wireframe = False
+        self.detail = 3
+        self.segments_per_render = 15
         
         self.prog = self.ctx.program(**shaders_source)
-        self.prog['segments'] = 15
-        self.prog['width'] = 0.05
+        self.prog['width'] = 0.1
+        self.prog['segments'] = self.detail * self.segments_per_render
+        self.prog['start_segment'] = 0
+        self.prog['end_segment'] = 15
 
         model_mat: np.ndarray = np.eye(4)
         view_mat: np.ndarray = np.eye(4)
@@ -85,7 +92,11 @@ class Test(mglw.WindowConfig):
 
     def render(self, time, frametime):
         self.ctx.clear(1.0, 1.0, 1.0)
-        self.vao.render(moderngl.TRIANGLES)
+
+        for i in range(0, self.prog['segments'].value, self.detail):
+            self.prog['start_segment'] = i
+            self.prog['end_segment'] = i + self.detail
+            self.vao.render(moderngl.LINES_ADJACENCY)
 
 if __name__ == "__main__":
     mglw.run_window_config(Test)

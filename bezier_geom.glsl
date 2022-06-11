@@ -45,7 +45,13 @@ vec3 find_mid_point(vec3 p1, vec3 p2) {
 }
 
 void triangulate_cap(vec3 start, vec3 end) {
+    float cap_size = width / 4.;
     vec3 v1 = end - start;
+
+    end += (normalize(v1)) * cap_size;
+
+    float cap_curve_factor = 1.;
+    vec2 end_center = end.xy - ((end.xy - start.xy) * cap_curve_factor);
 
     vec3 v_start_to_border = perp_clockwise(normalize(v1));
 
@@ -58,12 +64,12 @@ void triangulate_cap(vec3 start, vec3 end) {
     // Start triangle
     gl_Position = vec4(end_border_point_1, 1.);
     pos = end_border_point_1.xy;
-    center = start.xy;
+    center = end_center;
     EmitVertex();
 
     gl_Position = vec4(end_border_point_2, 1.);
     pos = end_border_point_2.xy;
-    center = start.xy;
+    center = end_center.xy;
     EmitVertex();
 
     gl_Position = vec4(start_border_point_2, 1.);
@@ -81,7 +87,7 @@ void triangulate_cap(vec3 start, vec3 end) {
 
     gl_Position = vec4(end_border_point_1, 1.);
     pos = end_border_point_1.xy;
-    center = start.xy;
+    center = end_center;
     EmitVertex();
 
     gl_Position = vec4(start_border_point_1, 1.);
@@ -90,6 +96,59 @@ void triangulate_cap(vec3 start, vec3 end) {
     EmitVertex();
     EndPrimitive();
 }
+
+//void triangulate_cap(vec3 start, vec3 end) {
+//    float cap_size = width / 4.;
+//    vec3 v1 = end - start;
+//
+//    end += (normalize(v1)) * cap_size;
+//
+//    float cap_curve_factor = 1.;
+//    vec2 end_center = end.xy - ((end.xy - start.xy) * cap_curve_factor);
+//
+//    vec3 v_start_to_border = perp_clockwise(normalize(v1));
+//
+//    vec3 start_border_point_1 = start + (v_start_to_border * (width / 2.));
+//    vec3 start_border_point_2 = start - (v_start_to_border * (width / 2.));
+//
+//    vec3 end_border_point_1 = end + (v_start_to_border * (width / 2.));
+//    vec3 end_border_point_2 = end - (v_start_to_border * (width / 2.));
+//
+//    // Start triangle
+//    gl_Position = vec4(end_border_point_1, 1.);
+//    pos = end_border_point_1.xy;
+//    center = end_center;
+//    EmitVertex();
+//
+//    gl_Position = vec4(end_border_point_2, 1.);
+//    pos = end_border_point_2.xy;
+//    center = end_center.xy;
+//    EmitVertex();
+//
+//    gl_Position = vec4(start_border_point_2, 1.);
+//    pos = start_border_point_2.xy;
+//    center = start.xy;
+//    EmitVertex();
+//    EndPrimitive();
+//
+//    // End Triangle
+//
+//    gl_Position = vec4(start_border_point_2, 1.);
+//    pos = start_border_point_2.xy;
+//    center = start.xy;
+//    EmitVertex();
+//
+//    gl_Position = vec4(end_border_point_1, 1.);
+//    pos = end_border_point_1.xy;
+//    center = end_center;
+//    EmitVertex();
+//
+//    gl_Position = vec4(start_border_point_1, 1.);
+//    pos = start_border_point_1.xy;
+//    center = start.xy;
+//    EmitVertex();
+//    EndPrimitive();
+//}
 
 void triangulate(vec3 start, vec3 anchor, vec3 end) {
     vec3 v_anc1 = anchor - start;

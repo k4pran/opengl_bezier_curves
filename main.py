@@ -45,33 +45,30 @@ class Test(mglw.WindowConfig):
         super().__init__(**kwargs)
 
         vertices = np.array([
-            200., 300., 0.,
-            350., 500., 0.,
-            450., 500., 0.,
-            600., 300., 0.
+            1., 0., 0.,
+            1., 4./3., 0.,
+            -1., 4/3., 0.,
+            -1., 0., 0.
         ], dtype='f4')
 
         self.ctx.enable(moderngl.PROGRAM_POINT_SIZE)
         self.ctx.enable(moderngl.BLEND)
-        # self.ctx.blend_func = (
-        #     moderngl.SRC_ALPHA,
-        #     moderngl.ONE_MINUS_SRC_ALPHA,
-        #     moderngl.ONE,
-        #     moderngl.ONE,
-        # )
+        self.ctx.enable(moderngl.DEPTH_TEST)
+        # self.ctx.blend_func = (moderngl.SRC_ALPHA, moderngl.ONE_MINUS_SRC_ALPHA)
+        # self.ctx.blend_equation = moderngl.MIN
         self.ctx.wireframe = False
-        self.detail = 2
+        self.detail = 3
         self.segments_per_render = 15
         
         self.prog = self.ctx.program(**shaders_source)
-        self.prog['width'] = 0.04
+        self.prog['width'] = .05
         self.prog['segments'] = self.detail * self.segments_per_render
         self.prog['start_segment'] = 0
         self.prog['end_segment'] = 15
 
         model_mat: np.ndarray = np.eye(4)
         view_mat: np.ndarray = np.eye(4)
-        proj_mat: np.ndarray = frustum(0., 800., 0., 600., -10., 10.)
+        proj_mat: np.ndarray = frustum(-3., 3., -3., 3., -10., 10.)
 
         # self.translate_by(model_mat, x=100, y=50.)
 

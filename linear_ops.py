@@ -27,8 +27,8 @@ def interpolate_points_2d(p1, p2, steps) -> list:
 
 
 def perp_anticlockwise_2d(vec) -> np.ndarray:
-    return np.array((-vec[1], vec[0]))
+    return np.array((-vec[1], vec[0], vec[2]))
 
 
 def perp_clockwise_2d(vec) -> np.ndarray:
-    return np.array((vec[1], -vec[0]))
+    return np.array((vec[1], -vec[0], vec[2]))

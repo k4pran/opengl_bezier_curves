@@ -1,6 +1,8 @@
 import moderngl_window as mglw, moderngl
 import numpy as np
 
+from linear_ops import perp_clockwise_2d, perp_anticlockwise_2d
+
 shaders_source = {}
 
 with open("bezier_vert.glsl", "r") as f:
@@ -44,12 +46,19 @@ class Test(mglw.WindowConfig):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
 
+
+        p1 = np.array([1., 0., 0.])
+        p2 = np.array([-1., 0., 0.])
+        perp_v = -perp_anticlockwise_2d(p2 - p1)
+
         vertices = np.array([
-            1., 0., 0.,
-            1., 4./3., 0.,
-            -1., 4/3., 0.,
-            -1., 0., 0.
+            *p1,
+            *(p1 + perp_v),
+            *(p2 + perp_v),
+            *p2
         ], dtype='f4')
+
+
 
         self.ctx.enable(moderngl.PROGRAM_POINT_SIZE)
         self.ctx.enable(moderngl.BLEND)

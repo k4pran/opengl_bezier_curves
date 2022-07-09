@@ -2,8 +2,7 @@
 
 uniform float width;
 
-in vec4 g_color;
-
+in vec4 color;
 in vec2 pos;
 in vec2 center;
 
@@ -16,6 +15,6 @@ void main() {
         discard;
     }
 
-    frag_color = vec4(0., 0., 0., 1.);
-    frag_color.a *= smoothstep(0., .5, 1. - (1. / (width / 2.) * dist));
+    frag_color = color;
+    frag_color.a *= smoothstep(0., .3, 1. - (1. / (width / 2.) * dist));
 }

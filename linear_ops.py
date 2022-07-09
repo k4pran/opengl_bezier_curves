@@ -32,3 +32,7 @@ def perp_anticlockwise_2d(vec) -> np.ndarray:
 
 def perp_clockwise_2d(vec) -> np.ndarray:
     return np.array((vec[1], -vec[0], vec[2]))
+
+
+def angle_to_y_axis(v1):
+    return np.tanh(v1[1] / v1[0])
